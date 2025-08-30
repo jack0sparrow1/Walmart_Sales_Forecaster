@@ -3,85 +3,303 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sales Forecasting</title>
+    <title>Walmart Sales Forecaster</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
-        body { font-family: Arial, sans-serif; margin: 2em; }
-        form { display: grid; grid-template-columns: 1fr 1fr; gap: 1em; max-width: 600px; }
-        label { grid-column: 1 / 2; text-align: right; }
-        input { grid-column: 2 / 3; }
-        button { grid-column: 1 / 3; }
-        #predictionResult { margin-top: 1em; font-size: 1.2em; font-weight: bold; }
+        /* --- Base Styles & Variables --- */
+        :root {
+            --primary-color: #0071ce; /* Walmart Blue */
+            --secondary-color: #ffc220; /* Walmart Yellow */
+            --background-color: #f4f7f6;
+            --card-background: #ffffff;
+            --text-color: #333333;
+            --light-gray: #e9ecef;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            --border-radius: 12px;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        /* --- Main Forecaster Card --- */
+        .forecaster-container {
+            background-color: var(--card-background);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 800px;
+            overflow: hidden;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- Card Header --- */
+        .forecaster-header {
+            background: linear-gradient(135deg, var(--primary-color), #005f9e);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .forecaster-header h1 {
+            margin: 0;
+            font-weight: 700;
+            font-size: 2rem;
+        }
+        
+        .forecaster-header i {
+            margin-right: 10px;
+        }
+
+        .forecaster-header p {
+            margin: 0.5rem 0 0;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        /* --- Form Styling --- */
+        #prediction-form {
+            padding: 2.5rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .form-control {
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            font-family: 'Poppins', sans-serif;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 113, 206, 0.2);
+        }
+
+        .form-control::placeholder {
+            color: #adb5bd;
+        }
+
+        /* --- Predict Button --- */
+        .predict-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 1rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 2rem;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .predict-btn i {
+            margin-right: 8px;
+        }
+
+        .predict-btn:hover {
+            background: #005f9e;
+            transform: translateY(-2px);
+        }
+
+        /* --- Result Display --- */
+        #result {
+            padding: 0 2.5rem 2.5rem;
+            text-align: center;
+            min-height: 60px;
+        }
+        
+        .prediction-output {
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            animation: slideIn 0.5s ease-out;
+            margin-top: 1rem;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .prediction-success {
+            background-color: #e9f5ec;
+            color: var(--success-color);
+            border: 1px solid var(--success-color);
+        }
+
+        .prediction-error {
+            background-color: #fbebee;
+            color: var(--error-color);
+            border: 1px solid var(--error-color);
+        }
+        
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: var(--primary-color);
+            animation: spin 1s ease infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
-    <h1>Walmart Sales Forecast</h1>
-    <form id="forecastForm">
-        <label for="Store">Store:</label>
-        <input type="number" id="Store" name="Store" value="1" required>
 
-        <label for="Holiday_Flag">Holiday Flag (0 for No, 1 for Yes):</label>
-        <input type="number" id="Holiday_Flag" name="Holiday_Flag" value="0" min="0" max="1" required>
+    <div class="forecaster-container">
+        <div class="forecaster-header">
+            <h1><i class="fas fa-chart-line"></i> Walmart Sales Forecaster</h1>
+            <p>Enter the details below to predict weekly sales</p>
+        </div>
 
-        <label for="Temperature">Temperature (°F):</label>
-        <input type="number" id="Temperature" name="Temperature" value="45.31" step="0.01" required>
+        <form id="prediction-form">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="store" class="form-label">Store ID</label>
+                    <input type="number" class="form-control" id="store" name="Store" placeholder="e.g., 1" min="1" max="100" required>
+                </div>
+                <div class="form-group">
+                    <label for="holiday_flag" class="form-label">Holiday Week</label>
+                    <input type="number" class="form-control" id="holiday_flag" name="Holiday_Flag" placeholder="0 for No, 1 for Yes" min="0" max="1" required>
+                </div>
+                <div class="form-group">
+                    <label for="temperature" class="form-label">Temperature (°F)</label>
+                    <input type="number" class="form-control" id="temperature" name="Temperature" placeholder="e.g., 55.2" step="0.1" required>
+                </div>
+                <div class="form-group">
+                    <label for="fuel_price" class="form-label">Fuel Price ($)</label>
+                    <input type="number" class="form-control" id="fuel_price" name="Fuel_Price" placeholder="e.g., 3.45" step="0.01" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="cpi" class="form-label">Consumer Price Index (CPI)</label>
+                    <input type="number" class="form-control" id="cpi" name="CPI" placeholder="e.g., 220.5" step="0.1" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="unemployment" class="form-label">Unemployment Rate (%)</label>
+                    <input type="number" class="form-control" id="unemployment" name="Unemployment" placeholder="e.g., 5.5" step="0.1" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="year" class="form-label">Year</label>
+                    <input type="number" class="form-control" id="year" name="Year" placeholder="e.g., 2025" min="2000" max="2100" required>
+                </div>
+                <div class="form-group">
+                    <label for="month" class="form-label">Month</label>
+                    <input type="number" class="form-control" id="month" name="Month" placeholder="e.g., 7" min="1" max="12" required>
+                </div>
+                <div class="form-group">
+                    <label for="week" class="form-label">Week of Year</label>
+                    <input type="number" class="form-control" id="week" name="Week" placeholder="e.g., 32" min="1" max="52" required>
+                </div>
+                <div class="form-group">
+                    <label for="day_of_week" class="form-label">Day of Week</label>
+                    <input type="number" class="form-control" id="day_of_week" name="Day_of_Week" placeholder="1 (Mon) - 7 (Sun)" min="1" max="7" required>
+                </div>
+            </div>
+            
+            <button type="submit" class="predict-btn">
+                <i class="fas fa-calculator"></i> Predict Sales
+            </button>
+        </form>
 
-        <label for="Fuel_Price">Fuel Price:</label>
-        <input type="number" id="Fuel_Price" name="Fuel_Price" value="2.572" step="0.001" required>
-
-        <label for="CPI">CPI:</label>
-        <input type="number" id="CPI" name="CPI" value="211.096" step="0.001" required>
-
-        <label for="Unemployment">Unemployment:</label>
-        <input type="number" id="Unemployment" name="Unemployment" value="8.106" step="0.001" required>
-
-        <label for="Year">Year:</label>
-        <input type="number" id="Year" name="Year" value="2012" required>
-
-        <label for="Month">Month:</label>
-        <input type="number" id="Month" name="Month" value="1" min="1" max="12" required>
-
-        <label for="Week">Week:</label>
-        <input type="number" id="Week" name="Week" value="1" min="1" max="52" required>
-
-        <label for="Day_of_Week">Day of Week (0-6):</label>
-        <input type="number" id="Day_of_Week" name="Day_of_Week" value="4" min="0" max="6" required>
-
-        <button type="submit">Get Forecast</button>
-    </form>
-
-    <div id="predictionResult"></div>
+        <div id="result"></div>
+    </div>
 
     <script>
-        document.getElementById('forecastForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
+        const form = document.getElementById('prediction-form');
+        const resultDiv = document.getElementById('result');
 
-            const form = e.target;
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            // Show a loading spinner
+            resultDiv.innerHTML = '<div class="spinner"></div>';
+
             const formData = new FormData(form);
             const data = Object.fromEntries(formData.entries());
-
-            // Convert all values to numbers
-            for (let key in data) {
-                data[key] = parseFloat(data[key]);
-            }
 
             try {
                 const response = await fetch('/predict', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
 
-                if (response.ok) {
-                    const result = await response.json();
-                    document.getElementById('predictionResult').innerText = `Forecasted Weekly Sales: $${result.prediction.toLocaleString()}`;
-                } else {
-                    const error = await response.json();
-                    document.getElementById('predictionResult').innerText = `Error: ${error.error}`;
-                }
+                const result = await response.json();
+                
+                // Add a small delay for a better user experience
+                setTimeout(() => {
+                    if (response.ok) {
+                        const predictionValue = result.prediction[0].toFixed(2);
+                        resultDiv.innerHTML = `
+                            <div class="prediction-output prediction-success">
+                                <strong>Predicted Weekly Sales:</strong> $${new Intl.NumberFormat().format(predictionValue)}
+                            </div>`;
+                    } else {
+                        resultDiv.innerHTML = `
+                            <div class="prediction-output prediction-error">
+                                <strong>Error:</strong> ${result.error}
+                            </div>`;
+                    }
+                }, 500); // 0.5 second delay
+
             } catch (error) {
-                document.getElementById('predictionResult').innerText = `Error: ${error}`;
+                 setTimeout(() => {
+                    resultDiv.innerHTML = `
+                        <div class="prediction-output prediction-error">
+                            <strong>An error occurred:</strong> ${error.message}
+                        </div>`;
+                }, 500);
             }
         });
     </script>
